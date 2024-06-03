@@ -94,14 +94,15 @@ function App() {
       <div className="navBar">
         <div className="currentDay">{current[0]}</div>
         <div className="currentDate">{current[2]}</div>
-        <select id="dropDown">
+
+        {/* <select id="dropDown">
           <option value="" disabled></option>
           {months.map((month, index) => (
             <option key={index} value={month.month}>
               {month.month}
             </option>
           ))}
-        </select>
+        </select>*/}
       </div>
       <div className="calendarDates">
         <div id="dayColumn">
