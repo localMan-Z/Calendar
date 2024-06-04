@@ -1,3 +1,4 @@
+import month from "./future";
 import {
   baseWeeks,
   days,
@@ -6,9 +7,58 @@ import {
   generateCurrentDate,
 } from "./dates";
 import "./App.css";
+import { useEffect, useReducer } from "react";
+let exportingIndex: {
+  week: { date: number; day: string }[];
+  weekIndex: string;
+}[];
 function App() {
+  let calendar = {
+    month: [],
+  };
+  function calendarReducer(
+    state: any,
+    action: { type: any; weekIndex: number; currentDay: string; currenta: any }
+  ) {
+    let constructedMonth;
+    switch (action.type) {
+      case "CONSTRUCT_CALENDAR":
+        constructedMonth = constructCalendar(
+          action.weekIndex,
+          action.currentDay,
+          action.currenta
+        );
+        console.log(constructedMonth);
+        return {
+          ...state,
+          month: constructedMonth,
+        };
+      default:
+        return state;
+    }
+  }
+  const [state, dispatch] = useReducer(calendarReducer, calendar);
   const { current } = generateCurrentDate();
-  function assignDates(currenta: never[], lastDayGenerated: boolean) {
+  const handleDispatch = (
+    weekIndex: number,
+    currentDay: string,
+    currenta: string[]
+  ) => {
+    dispatch({
+      type: "CONSTRUCT_CALENDAR",
+      weekIndex,
+      currentDay,
+      currenta,
+    });
+  };
+  useEffect(() => {
+    baseWeeks.forEach((_, weekIndex) => {
+      days.forEach((_, dayIndex) => {
+        handleDispatch(weekIndex, actualDays[dayIndex], current);
+      });
+    });
+  }, []);
+  function assignDates(currenta: any[], lastDayGenerated: boolean) {
     function remainingDays() {
       let windowOfAvailableDays, days;
       for (const month of months) {
@@ -32,6 +82,7 @@ function App() {
       return {
         date: Number(days) - i,
         day: actualDays[baseIndex - i],
+        dayIndex: actualDays.indexOf(actualDays[baseIndex - i]),
       };
     })
       .filter((days) => days.date >= 1)
@@ -44,8 +95,13 @@ function App() {
       week: currentWeekData,
     };
   }
-  function constructCalendar(weekIndex: number, currentDay: string) {
-    let week = assignDates(current, false);
+  function constructCalendar(
+    weekIndex: number,
+    currentDay: string,
+    currenta: any
+  ) {
+    // console.log(weekIndex, currentDay, currenta);
+    let week = assignDates(currenta, false);
     const cWeek = week.week;
     let month = [];
     month.push(cWeek);
@@ -74,35 +130,49 @@ function App() {
           weekIndex: baseWeeks[weekIndex],
         };
       });
-    const weeks = Array.from(
-      { length: month.length },
-      (_, i) => month[i].weekIndex
-    );
-    if (weeks.includes(baseWeeks[weekIndex])) {
-      const week = month.filter(
-        (week) => week.weekIndex == baseWeeks[weekIndex]
-      )[0].week;
-      for (let i = 0; i < week.length; i++) {
-        if (week[i].day == currentDay) {
-          return week[i].date;
-        }
+    exportingIndex = month;
+    return month;
+  }
+
+  function toggleMonth(adjective: string) {
+    month(adjective, current, exportingIndex);
+  }
+  function extractDate(
+    monthState: {
+      month: {
+        [x: string]: {
+          week: {
+            [x: string]: number;
+            date: any;
+          }[];
+        };
+      };
+    },
+    dayIndex: number,
+    weekIndex: number
+  ) {
+    for (let i = 0; i < actualDays.length; i++) {
+      if (dayIndex == monthState.month[weekIndex]?.week[i]?.dayIndex) {
+        return monthState.month[weekIndex].week[i].date;
       }
     }
   }
   return (
     <div className="App">
       <div className="navBar">
-        <div className="currentDay">{current[0]}</div>
+        <div className="currentDay">{current}</div>
         <div className="currentDate">{current[2]}</div>
-
-        {/* <select id="dropDown">
-          <option value="" disabled></option>
-          {months.map((month, index) => (
-            <option key={index} value={month.month}>
-              {month.month}
-            </option>
-          ))}
-        </select>*/}
+        <button
+          className="prev"
+          onClick={() => {
+            toggleMonth("previous");
+          }}
+        >
+          Prev
+        </button>
+        <button className="next" onClick={() => toggleMonth("next")}>
+          Next
+        </button>
       </div>
       <div className="calendarDates">
         <div id="dayColumn">
@@ -115,12 +185,9 @@ function App() {
 
         {baseWeeks.map((week, weekIndex) => (
           <div key={weekIndex} id={week} className="week">
-            {days.map((day, baseIndex) => (
-              <div
-                key={baseIndex}
-                className={`${day} ${actualDays[baseIndex]}`}
-              >
-                {constructCalendar(weekIndex, actualDays[baseIndex])}
+            {days.map((day, dayIndex) => (
+              <div key={dayIndex} className={`${day} ${actualDays[dayIndex]}`}>
+                {extractDate(state, dayIndex, weekIndex)}
               </div>
             ))}
           </div>
@@ -129,5 +196,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
