@@ -56,6 +56,6 @@ export default function month(
       : actualDays[baseIndex + 1];
   const date: number = adjective == "previous" ? numberOfDaysOfTheMonth : 1;
   const month = [];
-  month.push(dayOfTheMonth, months[index].month, date, weekIndex);
+  month.push(dayOfTheMonth, months[index].month, String(date), weekIndex);
   return month;
 }

@@ -12,9 +12,13 @@ let exportingIndex: {
   week: { date: number; day: string }[];
   weekIndex: string;
 }[];
+const { current } = generateCurrentDate();
+
 function App() {
-  let calendar = {
-    month: [],
+  const calendar = {
+    presentDay: {},
+    month: {},
+    previousMonth: {},
   };
   function calendarReducer(
     state: any,
@@ -28,9 +32,19 @@ function App() {
           action.currentDay,
           action.currenta
         );
-        console.log(constructedMonth);
         return {
-          ...state,
+          presentDay: action.currenta,
+          month: constructedMonth,
+        };
+      case "CONSTRUCT_NEW_MONTH":
+        constructedMonth = constructCalendar(
+          action.weekIndex,
+          action.currentDay,
+          action.currenta
+        );
+        return {
+          presentDay: action.currenta,
+          previousMonth: state.month,
           month: constructedMonth,
         };
       default:
@@ -38,14 +52,17 @@ function App() {
     }
   }
   const [state, dispatch] = useReducer(calendarReducer, calendar);
-  const { current } = generateCurrentDate();
   const handleDispatch = (
     weekIndex: number,
     currentDay: string,
-    currenta: string[]
+    currenta: string[],
+    generateNewMonth: boolean
   ) => {
+    const actionType = generateNewMonth
+      ? "CONSTRUCT_NEW_MONTH"
+      : "CONSTRUCT_CALENDAR";
     dispatch({
-      type: "CONSTRUCT_CALENDAR",
+      type: actionType,
       weekIndex,
       currentDay,
       currenta,
@@ -54,7 +71,7 @@ function App() {
   useEffect(() => {
     baseWeeks.forEach((_, weekIndex) => {
       days.forEach((_, dayIndex) => {
-        handleDispatch(weekIndex, actualDays[dayIndex], current);
+        handleDispatch(weekIndex, actualDays[dayIndex], current, false);
       });
     });
   }, []);
@@ -100,7 +117,6 @@ function App() {
     currentDay: string,
     currenta: any
   ) {
-    // console.log(weekIndex, currentDay, currenta);
     let week = assignDates(currenta, false);
     const cWeek = week.week;
     let month = [];
@@ -135,7 +151,18 @@ function App() {
   }
 
   function toggleMonth(adjective: string) {
-    month(adjective, current, exportingIndex);
+    let contextualMonth;
+    state.previousMonth != undefined
+      ? (contextualMonth = state.presentDay)
+      : (contextualMonth = current);
+
+    const [day, monthInCalendar, date, weekIndex] = month(
+      adjective,
+      contextualMonth,
+      exportingIndex
+    );
+    console.log(contextualMonth);
+    handleDispatch(weekIndex, day, [day, monthInCalendar, date], true);
   }
   function extractDate(
     monthState: {
@@ -160,8 +187,9 @@ function App() {
   return (
     <div className="App">
       <div className="navBar">
-        <div className="currentDay">{current}</div>
-        <div className="currentDate">{current[2]}</div>
+        <div className="currentDay">{state.presentDay[0]}</div>
+        <div className="currentDate">{state.presentDay[2]}</div>
+        <div className="currentMonth">{state.presentDay[1]}</div>
         <button
           className="prev"
           onClick={() => {
