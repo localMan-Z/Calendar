@@ -1,71 +1,33 @@
 import month from "./future";
-import {
-  baseWeeks,
-  days,
-  actualDays,
-  months,
-  generateCurrentDate,
-} from "./dates";
+import { baseWeeks, days, actualDays, generateCurrentDate } from "./dates";
 import "./App.css";
-import { useEffect, useReducer } from "react";
+import { useEffect } from "react";
+import { useCalendar, CalendarAction } from "./calendarContext";
+
 let exportingIndex: {
-  week: { date: number; day: string }[];
+  week: { date: number; day: string; dayIndex: number }[];
   weekIndex: string;
 }[];
 const { current } = generateCurrentDate();
 
 function App() {
-  const calendar = {
-    presentDay: {},
-    month: {},
-    previousMonth: {},
-  };
-  function calendarReducer(
-    state: any,
-    action: { type: any; weekIndex: number; currentDay: string; currenta: any }
-  ) {
-    let constructedMonth;
-    switch (action.type) {
-      case "CONSTRUCT_CALENDAR":
-        constructedMonth = constructCalendar(
-          action.weekIndex,
-          action.currentDay,
-          action.currenta
-        );
-        return {
-          presentDay: action.currenta,
-          month: constructedMonth,
-        };
-      case "CONSTRUCT_NEW_MONTH":
-        constructedMonth = constructCalendar(
-          action.weekIndex,
-          action.currentDay,
-          action.currenta
-        );
-        return {
-          presentDay: action.currenta,
-          previousMonth: state.month,
-          month: constructedMonth,
-        };
-      default:
-        return state;
-    }
-  }
-  const [state, dispatch] = useReducer(calendarReducer, calendar);
+  const { state, dispatch } = useCalendar();
   const handleDispatch = (
     weekIndex: number,
     currentDay: string,
     currenta: string[],
     generateNewMonth: boolean
   ) => {
-    const actionType = generateNewMonth
+    const actionType: CalendarAction["type"] = generateNewMonth
       ? "CONSTRUCT_NEW_MONTH"
       : "CONSTRUCT_CALENDAR";
     dispatch({
       type: actionType,
-      weekIndex,
-      currentDay,
-      currenta,
+      payload: {
+        weekIndex,
+        currentDay,
+        currenta,
+      },
     });
   };
   useEffect(() => {
@@ -75,105 +37,32 @@ function App() {
       });
     });
   }, []);
-  function assignDates(currenta: any[], lastDayGenerated: boolean) {
-    function remainingDays() {
-      let windowOfAvailableDays, days;
-      for (const month of months) {
-        if (month.month == currenta[1]) {
-          days = month.days;
-          windowOfAvailableDays = Number(days) - Number(currenta[2]);
-        }
-      }
-      return { days, windowOfAvailableDays };
-    }
-    const days = !lastDayGenerated ? remainingDays().days : currenta[2];
-    let baseIndex = actualDays.indexOf(currenta[0]);
-    let workingDate = Number(currenta[2]);
-    while (workingDate < Number(days)) {
-      workingDate += 1;
-      baseIndex == 6 ? (baseIndex = 0) : (baseIndex += 1);
-    }
-    const lastDay = actualDays[baseIndex];
-
-    const currentWeekData = Array.from({ length: 7 }, (_, i) => {
-      return {
-        date: Number(days) - i,
-        day: actualDays[baseIndex - i],
-        dayIndex: actualDays.indexOf(actualDays[baseIndex - i]),
-      };
-    })
-      .filter((days) => days.date >= 1)
-      .filter((days) => days.day != undefined)
-      .reverse();
-    return {
-      baseIndex,
-      dayOfTheWeek: lastDay,
-      month: currenta[1],
-      week: currentWeekData,
-    };
-  }
-  function constructCalendar(
-    weekIndex: number,
-    currentDay: string,
-    currenta: any
-  ) {
-    let week = assignDates(currenta, false);
-    const cWeek = week.week;
-    let month = [];
-    month.push(cWeek);
-    const availableWeeks = Math.ceil(
-      (Number(week.week[week.week.length - 1].date) - 7) / 7
-    );
-
-    for (let i = 0; i <= availableWeeks; i++) {
-      const date =
-        week.baseIndex < 6
-          ? week.week[week.week.length - 1].date - week.baseIndex - 1
-          : week.week[week.week.length - 1].date - 7;
-      const day = week.baseIndex < 6 ? "Sun" : week.dayOfTheWeek;
-      const current = [day, week.month, date];
-      const intermediateWeek = assignDates(current, true);
-      const a = intermediateWeek.week;
-      month.push(a);
-      week = intermediateWeek;
-    }
-    month = month
-      .filter((week) => week.length != 0)
-      .reverse()
-      .map((week, weekIndex) => {
-        return {
-          week,
-          weekIndex: baseWeeks[weekIndex],
-        };
-      });
-    exportingIndex = month;
-    return month;
-  }
 
   function toggleMonth(adjective: string) {
     let contextualMonth;
     state.previousMonth != undefined
       ? (contextualMonth = state.presentDay)
       : (contextualMonth = current);
+    exportingIndex = state.month;
 
     const [day, monthInCalendar, date, weekIndex] = month(
       adjective,
       contextualMonth,
       exportingIndex
     );
-    console.log(contextualMonth);
-    handleDispatch(weekIndex, day, [day, monthInCalendar, date], true);
+    handleDispatch(
+      Number(weekIndex),
+      String(day),
+      [day, monthInCalendar, date].map(String),
+      true
+    );
   }
   function extractDate(
     monthState: {
       month: {
-        [x: string]: {
-          week: {
-            [x: string]: number;
-            date: any;
-          }[];
-        };
-      };
+        week: { date: number; day: string; dayIndex: number }[];
+        weekIndex: string;
+      }[];
     },
     dayIndex: number,
     weekIndex: number

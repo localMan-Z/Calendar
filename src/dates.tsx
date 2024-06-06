@@ -32,7 +32,7 @@ const months = [
 ];
 function generateCurrentDate() {
   const date = new Date();
-  const current = [...String(date).split(" ")].splice(0, 6);
+  const current = [...String(date).split(" ")].splice(0, 6).map(String);
   // const current = ["Sat", "May", "4", "2024", "16:11:00", "GMT+05:30"];
 
   return { current };

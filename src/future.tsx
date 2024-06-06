@@ -2,8 +2,12 @@ import { actualDays, months, baseWeeks } from "./dates";
 export default function month(
   adjective: string,
   currentMonth: string[],
-  exportingIndex
+  exportingIndex: {
+    week: { date: number; day: string; dayIndex: number }[];
+    weekIndex: string;
+  }[]
 ) {
+  console.log(exportingIndex);
   let index: number, days: number;
   for (const month of months) {
     if (month.month == currentMonth[1]) {
