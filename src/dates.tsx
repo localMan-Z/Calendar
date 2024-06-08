@@ -18,7 +18,7 @@ const baseWeeks = [
 ];
 const months = [
   { month: "Jan", days: 31 },
-  { month: "Feb", days: 28 },
+  { month: "Feb", days: 29 },
   { month: "Mar", days: 31 },
   { month: "Apr", days: 30 },
   { month: "May", days: 31 },
@@ -33,8 +33,8 @@ const months = [
 function generateCurrentDate() {
   const date = new Date();
   const current = [...String(date).split(" ")].splice(0, 6).map(String);
-  // const current = ["Sat", "May", "4", "2024", "16:11:00", "GMT+05:30"];
-
+  // const current = ["Sun", "Jul", "31", "2024", "16:11:00", "GMT+05:30"];
+  //
   return { current };
 }
 export { days, baseWeeks, actualDays, months, generateCurrentDate };

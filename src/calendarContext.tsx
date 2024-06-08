@@ -10,7 +10,12 @@ interface Calendar {
   }[];
   previousMonth: object;
 }
-
+interface QueriedMonth {
+  month: {
+    week: { date: number; day: string; dayIndex: number }[];
+    weekIndex: string;
+  }[];
+}
 interface constructCalendar {
   type: "CONSTRUCT_CALENDAR";
   payload: {
@@ -29,7 +34,12 @@ interface constructNewMonth {
   };
 }
 
-export type CalendarAction = constructCalendar | constructNewMonth;
+interface constructQueriedMonth {
+  type: "CONSTRUCT_QUERIED_MONTH";
+  payload: {
+    currenta: string[];
+  };
+}
 
 const calendar: Calendar = {
   initialDay: [],
@@ -37,17 +47,15 @@ const calendar: Calendar = {
   month: [],
   previousMonth: {},
 };
-
+const queriedMonth: QueriedMonth = {
+  month: [],
+};
 function calendarReducer(state: Calendar, action: CalendarAction): Calendar {
   let newMonth;
 
   switch (action.type) {
     case "CONSTRUCT_CALENDAR":
-      newMonth = constructCalendar(
-        action.payload.weekIndex,
-        action.payload.currentDay,
-        action.payload.currenta
-      );
+      newMonth = constructCalendar(action.payload.currenta);
 
       return {
         initialDay: action.payload.currenta,
@@ -57,11 +65,7 @@ function calendarReducer(state: Calendar, action: CalendarAction): Calendar {
       };
 
     case "CONSTRUCT_NEW_MONTH":
-      newMonth = constructCalendar(
-        action.payload.weekIndex,
-        action.payload.currentDay,
-        action.payload.currenta
-      );
+      newMonth = constructCalendar(action.payload.currenta);
       return {
         initialDay: state.initialDay,
         presentDay: alignDates(
@@ -72,32 +76,31 @@ function calendarReducer(state: Calendar, action: CalendarAction): Calendar {
         month: newMonth,
         previousMonth: state.month,
       };
+
     default:
       return state;
   }
 }
 
-const calendarContext = createContext<{
-  state: Calendar;
-  dispatch: React.Dispatch<CalendarAction>;
-}>({
-  state: calendar,
-  dispatch: () => undefined,
-});
+function alternateReducer(
+  state: QueriedMonth,
+  action: CalendarAction
+): QueriedMonth {
+  let month;
+  switch (action.type) {
+    case "CONSTRUCT_QUERIED_MONTH":
+      month = constructCalendar(action.payload.currenta);
 
-export const CalendarProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(calendarReducer, calendar);
-  return (
-    <calendarContext.Provider value={{ state, dispatch }}>
-      {children}
-    </calendarContext.Provider>
-  );
-};
-export const useCalendar = () => useContext(calendarContext);
-
+      return {
+        month: month,
+      };
+    default:
+      return state;
+  }
+}
 function constructCalendar(
-  _weekIndex: number,
-  _currentDay: string,
+  // _weekIndex: number,
+  // _currentDay: string,
   currenta: string[]
 ) {
   let week = assignDates(currenta, false);
@@ -118,7 +121,6 @@ function constructCalendar(
     const intermediateWeek = assignDates(current.map(String), true);
     const a = intermediateWeek.week;
     month.push(a);
-    console.log(month);
     week = intermediateWeek;
   }
   month = month
@@ -189,3 +191,39 @@ function alignDates(
     }
   }
 }
+
+const calendarContext = createContext<{
+  state: Calendar;
+  dispatch: React.Dispatch<CalendarAction>;
+}>({
+  state: calendar,
+  dispatch: () => undefined,
+});
+
+const newMonthContext = createContext<{
+  altState: QueriedMonth;
+  altDispatch: React.Dispatch<CalendarAction>;
+}>({
+  altState: queriedMonth,
+  altDispatch: () => undefined,
+});
+
+export type CalendarAction =
+  | constructCalendar
+  | constructNewMonth
+  | constructQueriedMonth;
+
+export const CalendarProvider = ({ children }: { children: ReactNode }) => {
+  const [state, dispatch] = useReducer(calendarReducer, calendar);
+  const [altState, altDispatch] = useReducer(alternateReducer, queriedMonth);
+  return (
+    <calendarContext.Provider value={{ state, dispatch }}>
+      <newMonthContext.Provider value={{ altState, altDispatch }}>
+        {children}
+      </newMonthContext.Provider>
+    </calendarContext.Provider>
+  );
+};
+
+export const useCalendar = () => useContext(calendarContext);
+export const useQuery = () => useContext(newMonthContext);
