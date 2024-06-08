@@ -114,7 +114,10 @@ function App() {
         {baseWeeks.map((week, weekIndex) => (
           <div key={weekIndex} id={week} className="week">
             {days.map((day, dayIndex) => (
-              <div key={dayIndex} className={`${day} ${actualDays[dayIndex]}`}>
+              <div
+                key={dayIndex}
+                className={`${day} ${actualDays[dayIndex]} day`}
+              >
                 {extractDate(state, dayIndex, weekIndex)}
               </div>
             ))}

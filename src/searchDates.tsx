@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { months, generateCurrentDate, actualDays } from "./dates";
+import { months, actualDays } from "./dates";
 import { useCalendar, useQuery } from "./calendarContext";
 export default function Dates() {
   const { altDispatch } = useQuery();
@@ -32,7 +32,9 @@ export default function Dates() {
   }
 
   function constructMonth() {
-    const { current } = generateCurrentDate();
+    // const { current } = generateCurrentDate();
+    // console.log(state, current, performance.now());
+    const current = state.presentDay;
     let yearGap =
       Number(current[3]) > Number(completeDate.substring(6))
         ? Number(current[3]) - Number(completeDate.substring(6))
@@ -113,12 +115,10 @@ export default function Dates() {
   }
   function searchForTheDay(array) {
     const date = completeDate.substring(3, 5);
-    console.log(date);
     for (const week of array) {
       for (let i = 0; i < week.week.length; i++) {
         if (week.week[i].date == Number(date)) {
-          console.log("a");
-          console.log(week.week[i].day);
+          console.log(week.week[i].day, performance.now());
           return week.week[i].day;
         }
       }
