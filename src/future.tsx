@@ -7,7 +7,6 @@ export default function month(
     weekIndex: string;
   }[]
 ) {
-  console.log(exportingIndex);
   let index: number, days: number;
   for (const month of months) {
     if (month.month == currentMonth[1]) {

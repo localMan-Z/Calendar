@@ -1,9 +1,9 @@
 import month from "./future";
 import { baseWeeks, days, actualDays, generateCurrentDate } from "./dates";
 import "./App.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCalendar, CalendarAction } from "./calendarContext";
-
+import Dates from "./searchDates";
 let exportingIndex: {
   week: { date: number; day: string; dayIndex: number }[];
   weekIndex: string;
@@ -11,7 +11,9 @@ let exportingIndex: {
 const { current } = generateCurrentDate();
 
 function App() {
+  const [queryDate, setQueryDate] = useState("");
   const { state, dispatch } = useCalendar();
+  const { parseInput } = Dates();
   const handleDispatch = (
     weekIndex: number,
     currentDay: string,
@@ -44,7 +46,6 @@ function App() {
       ? (contextualMonth = state.presentDay)
       : (contextualMonth = current);
     exportingIndex = state.month;
-
     const [day, monthInCalendar, date, weekIndex] = month(
       adjective,
       contextualMonth,
@@ -73,6 +74,10 @@ function App() {
       }
     }
   }
+  function displayDate(event: any) {
+    const date = parseInput(event);
+    setQueryDate(date);
+  }
   return (
     <div className="App">
       <div className="navBar">
@@ -90,6 +95,12 @@ function App() {
         <button className="next" onClick={() => toggleMonth("next")}>
           Next
         </button>
+        <input
+          type="text"
+          onChange={() => displayDate(event)}
+          value={queryDate}
+        />
+        <span className="material-symbols-outlined">calendar_month</span>
       </div>
       <div className="calendarDates">
         <div id="dayColumn">

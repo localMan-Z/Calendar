@@ -2,6 +2,7 @@ import React, { createContext, ReactNode, useContext, useReducer } from "react";
 import { baseWeeks, months, actualDays } from "./dates";
 
 interface Calendar {
+  initialDay: string[];
   presentDay: string[];
   month: {
     week: { date: number; day: string; dayIndex: number }[];
@@ -31,6 +32,7 @@ interface constructNewMonth {
 export type CalendarAction = constructCalendar | constructNewMonth;
 
 const calendar: Calendar = {
+  initialDay: [],
   presentDay: [],
   month: [],
   previousMonth: {},
@@ -38,6 +40,7 @@ const calendar: Calendar = {
 
 function calendarReducer(state: Calendar, action: CalendarAction): Calendar {
   let newMonth;
+
   switch (action.type) {
     case "CONSTRUCT_CALENDAR":
       newMonth = constructCalendar(
@@ -45,7 +48,9 @@ function calendarReducer(state: Calendar, action: CalendarAction): Calendar {
         action.payload.currentDay,
         action.payload.currenta
       );
+
       return {
+        initialDay: action.payload.currenta,
         presentDay: action.payload.currenta,
         month: newMonth,
         previousMonth: {},
@@ -58,7 +63,12 @@ function calendarReducer(state: Calendar, action: CalendarAction): Calendar {
         action.payload.currenta
       );
       return {
-        presentDay: action.payload.currenta,
+        initialDay: state.initialDay,
+        presentDay: alignDates(
+          state.initialDay,
+          newMonth,
+          action.payload.currenta
+        ),
         month: newMonth,
         previousMonth: state.month,
       };
@@ -86,8 +96,8 @@ export const CalendarProvider = ({ children }: { children: ReactNode }) => {
 export const useCalendar = () => useContext(calendarContext);
 
 function constructCalendar(
-  weekIndex: number,
-  currentDay: string,
+  _weekIndex: number,
+  _currentDay: string,
   currenta: string[]
 ) {
   let week = assignDates(currenta, false);
@@ -108,6 +118,7 @@ function constructCalendar(
     const intermediateWeek = assignDates(current.map(String), true);
     const a = intermediateWeek.week;
     month.push(a);
+    console.log(month);
     week = intermediateWeek;
   }
   month = month
@@ -158,4 +169,23 @@ function assignDates(currenta: string[], lastDayGenerated: boolean) {
     month: currenta[1],
     week: currentWeekData,
   };
+}
+
+function alignDates(
+  initialDay: string[],
+  currentMonth: {
+    week: { date: number; day: string; dayIndex: number }[];
+    weekIndex: string;
+  }[],
+  currenta: string[]
+) {
+  const day: string[] = [];
+  for (const week of currentMonth) {
+    for (let i = 0; i < week.week.length; i++) {
+      if (Number(initialDay[2]) == week.week[i].date) {
+        day.push(week.week[i].day, currenta[1], String(week.week[i].date));
+        return day;
+      }
+    }
+  }
 }
