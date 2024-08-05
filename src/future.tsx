@@ -1,4 +1,4 @@
-import { actualDays, months, baseWeeks } from "./dates";
+import { daysOfTheWeek, months, baseWeeks } from "./dates";
 export default function month(
   adjective: string,
   currentMonth: string[],
@@ -11,17 +11,30 @@ export default function month(
   for (const month of months) {
     if (month.month == currentMonth[1]) {
       days = months[months.indexOf(month)].days;
-      index =
-        adjective == "previous"
-          ? months.indexOf(month) == 0
-            ? 11
-            : months.indexOf(month) - 1
-          : months.indexOf(month) == 11
-          ? 0
-          : months.indexOf(month) + 1;
+      // index =
+      //   adjective == "previous"
+      //     ? months.indexOf(month) == 0
+      //       ? 11
+      //       : months.indexOf(month) - 1
+      //     : months.indexOf(month) == 11
+      //     ? 0
+      //     : months.indexOf(month) + 1;
+      if (adjective == "previous") {
+        if (months.indexOf(month) == 0) {
+          index = 11;
+        } else {
+          index = months.indexOf(month) - 1;
+        }
+      } else {
+        if (months.indexOf(month) == 11) {
+          index = 0;
+        } else {
+          index = months.indexOf(month) + 1;
+        }
+      }
     }
   }
-  let baseIndex = actualDays.indexOf(currentMonth[0]);
+  let baseIndex = daysOfTheWeek.indexOf(currentMonth[0]);
   let weekIndex: number;
   for (const week of exportingIndex) {
     for (let i = 0; i < week.week.length; i++) {
@@ -30,9 +43,10 @@ export default function month(
       }
     }
   }
-  const numberOfDaysOfTheMonth = months[index].days;
 
+  const numberOfDaysOfTheMonth = months[index].days;
   let workingDay = Number(currentMonth[2]);
+
   if (adjective == "previous") {
     while (workingDay > 1) {
       workingDay -= 1;
@@ -52,11 +66,11 @@ export default function month(
   const dayOfTheMonth: string =
     adjective == "previous"
       ? baseIndex == 0
-        ? actualDays[6]
-        : actualDays[baseIndex - 1]
+        ? daysOfTheWeek[6]
+        : daysOfTheWeek[baseIndex - 1]
       : baseIndex == 6
-      ? actualDays[0]
-      : actualDays[baseIndex + 1];
+      ? daysOfTheWeek[0]
+      : daysOfTheWeek[baseIndex + 1];
   const date: number = adjective == "previous" ? numberOfDaysOfTheMonth : 1;
   const month = [];
   month.push(dayOfTheMonth, months[index].month, String(date), weekIndex);

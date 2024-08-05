@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useContext, useReducer } from "react";
-import { baseWeeks, months, actualDays } from "./dates";
+import { baseWeeks, months, daysOfTheWeek } from "./dates";
 
 interface Calendar {
   initialDay: string[];
@@ -147,19 +147,19 @@ function assignDates(currenta: string[], lastDayGenerated: boolean) {
     return { days, windowOfAvailableDays };
   }
   const days = !lastDayGenerated ? remainingDays().days : currenta[2];
-  let baseIndex = actualDays.indexOf(currenta[0]);
+  let baseIndex = daysOfTheWeek.indexOf(currenta[0]);
   let workingDate = Number(currenta[2]);
   while (workingDate < Number(days)) {
     workingDate += 1;
     baseIndex == 6 ? (baseIndex = 0) : (baseIndex += 1);
   }
-  const lastDay = actualDays[baseIndex];
+  const lastDay = daysOfTheWeek[baseIndex];
 
   const currentWeekData = Array.from({ length: 7 }, (_, i) => {
     return {
       date: Number(days) - i,
-      day: actualDays[baseIndex - i],
-      dayIndex: actualDays.indexOf(actualDays[baseIndex - i]),
+      day: daysOfTheWeek[baseIndex - i],
+      dayIndex: daysOfTheWeek.indexOf(daysOfTheWeek[baseIndex - i]),
     };
   })
     .filter((days) => days.date >= 1)
@@ -182,14 +182,23 @@ function alignDates(
   currenta: string[]
 ) {
   const day: string[] = [];
+  let referenceDate: number;
+  const lastDay: number = Number(
+    currentMonth[currentMonth.length - 1].week[
+      currentMonth[currentMonth.length - 1].week.length - 1
+    ].date
+  );
+  Number(initialDay[2]) > lastDay
+    ? (referenceDate = lastDay)
+    : (referenceDate = Number(initialDay[2]));
   for (const week of currentMonth) {
     for (let i = 0; i < week.week.length; i++) {
-      if (Number(initialDay[2]) == week.week[i].date) {
+      if (referenceDate == week.week[i].date) {
         day.push(week.week[i].day, currenta[1], String(week.week[i].date));
-        return day;
       }
     }
   }
+  return day;
 }
 
 const calendarContext = createContext<{

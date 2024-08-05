@@ -1,10 +1,10 @@
 import month from "./future";
-import { baseWeeks, days, actualDays, generateCurrentDate } from "./dates";
+import { baseWeeks, days, daysOfTheWeek, generateCurrentDate } from "./dates";
 import "./App.css";
 import { useEffect, useState } from "react";
 import { useCalendar, CalendarAction } from "./calendarContext";
 import Dates from "./searchDates";
-let exportingIndex: {
+let exportedMonth: {
   week: { date: number; day: string; dayIndex: number }[];
   weekIndex: string;
 }[];
@@ -35,22 +35,23 @@ function App() {
   useEffect(() => {
     baseWeeks.forEach((_, weekIndex) => {
       days.forEach((_, dayIndex) => {
-        handleDispatch(weekIndex, actualDays[dayIndex], current, false);
+        handleDispatch(weekIndex, daysOfTheWeek[dayIndex], current, false);
       });
     });
   }, []);
 
   function toggleMonth(adjective: string) {
-    let contextualMonth;
+    let dayInReference;
     state.previousMonth != undefined
-      ? (contextualMonth = state.presentDay)
-      : (contextualMonth = current);
-    exportingIndex = state.month;
+      ? (dayInReference = state.presentDay)
+      : (dayInReference = current);
+    exportedMonth = state.month;
     const [day, monthInCalendar, date, weekIndex] = month(
       adjective,
-      contextualMonth,
-      exportingIndex
+      dayInReference,
+      exportedMonth
     );
+    console.log({ day, monthInCalendar, date, weekIndex });
     handleDispatch(
       Number(weekIndex),
       String(day),
@@ -68,7 +69,7 @@ function App() {
     dayIndex: number,
     weekIndex: number
   ) {
-    for (let i = 0; i < actualDays.length; i++) {
+    for (let i = 0; i < daysOfTheWeek.length; i++) {
       if (dayIndex == monthState.month[weekIndex]?.week[i]?.dayIndex) {
         return monthState.month[weekIndex].week[i].date;
       }
@@ -104,7 +105,7 @@ function App() {
       </div>
       <div className="calendarDates">
         <div id="dayColumn">
-          {actualDays.map((day, index) => (
+          {daysOfTheWeek.map((day, index) => (
             <div key={index} id={day}>
               {day}
             </div>
@@ -116,7 +117,7 @@ function App() {
             {days.map((day, dayIndex) => (
               <div
                 key={dayIndex}
-                className={`${day} ${actualDays[dayIndex]} day`}
+                className={`${day} ${daysOfTheWeek[dayIndex]} day`}
               >
                 {extractDate(state, dayIndex, weekIndex)}
               </div>

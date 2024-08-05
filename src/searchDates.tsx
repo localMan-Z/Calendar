@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { months, actualDays } from "./dates";
+import { months, daysOfTheWeek } from "./dates";
 import { useCalendar, useQuery } from "./calendarContext";
 export default function Dates() {
   const { altDispatch } = useQuery();
@@ -99,7 +99,7 @@ export default function Dates() {
 
     let queryArray = [];
     queryArray.push(
-      actualDays[lastDayIndex],
+      daysOfTheWeek[lastDayIndex],
       months[queryMonthIndex].month,
       String(months[queryMonthIndex].days)
     );
@@ -118,7 +118,7 @@ export default function Dates() {
     for (const week of array) {
       for (let i = 0; i < week.week.length; i++) {
         if (week.week[i].date == Number(date)) {
-          console.log(week.week[i].day, performance.now());
+          console.log(week.week[i].day);
           return week.week[i].day;
         }
       }

@@ -7,7 +7,7 @@ const days = [
   "sixthDay",
   "seventhDay",
 ];
-const actualDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const daysOfTheWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const baseWeeks = [
   "firstWeek",
   "secondWeek",
@@ -32,9 +32,9 @@ const months = [
 ];
 function generateCurrentDate() {
   const date = new Date();
-  const current = [...String(date).split(" ")].splice(0, 6).map(String);
-  // const current = ["Sun", "Jul", "31", "2024", "16:11:00", "GMT+05:30"];
+  // const current = [...String(date).split(" ")].splice(0, 6).map(String);
+  const current = ["Sun", "Jul", "31", "2024", "16:11:00", "GMT+05:30"];
   //
   return { current };
 }
-export { days, baseWeeks, actualDays, months, generateCurrentDate };
+export { days, baseWeeks, daysOfTheWeek, months, generateCurrentDate };
